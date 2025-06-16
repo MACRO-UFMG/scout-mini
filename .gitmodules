@@ -1,0 +1,16 @@
+
+[submodule "livox_ros_driver2"]
+	path = livox_ros_driver2
+	url = git@github.com:UFMG-Petrobras-OP-1319/livox_ros_driver2.git
+[submodule "Livox-SDK2"]
+	path = Livox-SDK2
+	url = git@github.com:Livox-SDK/Livox-SDK2.git
+[submodule "scout-bringup"]
+	path = scout-bringup
+	url = git@github.com:UFMG-Petrobras-OP-1319/scout-bringup.git
+[submodule "scout_ros2"]
+	path = scout_ros2
+	url = git@github.com:agilexrobotics/scout_ros2.git
+[submodule "ugv_sdk"]
+	path = ugv_sdk
+	url = git@github.com:agilexrobotics/ugv_sdk.git
