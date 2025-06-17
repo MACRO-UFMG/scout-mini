@@ -14,3 +14,6 @@
 [submodule "ugv_sdk"]
 	path = ugv_sdk
 	url = git@github.com:agilexrobotics/ugv_sdk.git
+[submodule "pointcloud_to_laserscan"]
+	path = pointcloud_to_laserscan
+	url = git@github.com:MACRO-UFMG/pointcloud_to_laserscan.git
