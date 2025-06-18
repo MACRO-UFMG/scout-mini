@@ -32,8 +32,8 @@ cd "${WORKSPACE_DIR}"
 echo "Changed working directory to: $(pwd)"
 
 # 2. Clean up old build artifacts in the workspace root.
-echo "Cleaning up previous build artifacts (build/, install/, log/)..."
-rm -rf build/ install/ log/
+#echo "Cleaning up previous build artifacts (build/, install/, log/)..."
+#rm -rf build/ install/ log/
 
 # 3. Prepare the Livox package files for the build.
 echo "Preparing Livox driver files..."
