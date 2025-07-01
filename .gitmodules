@@ -19,3 +19,10 @@
 [submodule "scout_ws/src/FAST_LIO_ROS2"]
 	path = scout_ws/src/FAST_LIO_ROS2
 	url = git@github.com:MACRO-UFMG/FAST_LIO_ROS2.git
+[submodule "scout_ws/src/librealsense"]
+	path = scout_ws/src/librealsense
+	url = https://github.com/IntelRealSense/librealsense.git
+[submodule "scout_ws/src/realsense-ros"]
+	path = scout_ws/src/realsense-ros
+	url = https://github.com/IntelRealSense/realsense-ros.git
+	branch = ros2-development
