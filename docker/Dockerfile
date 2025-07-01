@@ -117,23 +117,14 @@ USER $USERNAME
 WORKDIR /home/$USERNAME/ros2_ws
 
 # Update rosdep for the ros user and install dependencies for Scout Mini and RealSense packages
-# Skip ugv_sdk and ros-jazzy-launch-pytest as they are local packages or unavailable
+# Skip ros-jazzy-launch-pytest as it is unavailable
 RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
     rosdep update && \
-    rosdep install --from-paths src --ignore-src -r -y --skip-keys='ugv_sdk ros-jazzy-launch-pytest' || true"
+    rosdep install --from-paths src --ignore-src -r -y --skip-keys='ros-jazzy-launch-pytest' || true"
 
-# Build ugv_sdk first as a CMake package (ROS 1 style)
+# Build ugv_sdk and Scout Mini packages first (dependencies first)
 RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
-    cd src/ugv_sdk && \
-    mkdir -p build && cd build && \
-    cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/ros/jazzy && \
-    make -j$(nproc) && \
-    sudo make install && \
-    sudo ldconfig"
-
-# Build Scout Mini packages first (messages, then main packages)
-RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
-    colcon build --packages-select scout_msgs --cmake-args -DCMAKE_BUILD_TYPE=Release"
+    colcon build --packages-select ugv_sdk scout_msgs --cmake-args -DCMAKE_BUILD_TYPE=Release"
 
 # Build Scout Mini main packages
 RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
