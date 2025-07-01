@@ -43,6 +43,10 @@ RUN apt-get update && apt-get install -y \
     python3-venv \
     libasio-dev \
     libserial-dev \
+    # Additional missing packages
+    dkms \
+    python3-tqdm \
+    python3-requests \
     # Scout Mini ROS packages
     ros-jazzy-joint-state-publisher \
     ros-jazzy-robot-state-publisher \
@@ -53,6 +57,7 @@ RUN apt-get update && apt-get install -y \
     ros-jazzy-sensor-msgs \
     ros-jazzy-nav-msgs \
     ros-jazzy-std-msgs \
+    ros-jazzy-launch-testing-ament-cmake \
     # Intel RealSense dependencies
     libudev-dev \
     pkg-config \
@@ -112,9 +117,10 @@ USER $USERNAME
 WORKDIR /home/$USERNAME/ros2_ws
 
 # Update rosdep for the ros user and install dependencies for Scout Mini and RealSense packages
+# Skip ugv_sdk and ros-jazzy-launch-pytest as they are local packages or unavailable
 RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
     rosdep update && \
-    rosdep install --from-paths src --ignore-src -r -y"
+    rosdep install --from-paths src --ignore-src -r -y --skip-keys='ugv_sdk ros-jazzy-launch-pytest' || true"
 
 # Build librealsense SDK first (required by realsense-ros)
 RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
