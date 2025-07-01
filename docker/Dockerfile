@@ -111,8 +111,9 @@ RUN chown -R $USERNAME:$USERNAME /home/$USERNAME/ros2_ws
 USER $USERNAME
 WORKDIR /home/$USERNAME/ros2_ws
 
-# Install dependencies for Scout Mini and RealSense packages
+# Update rosdep for the ros user and install dependencies for Scout Mini and RealSense packages
 RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
+    rosdep update && \
     rosdep install --from-paths src --ignore-src -r -y"
 
 # Build librealsense SDK first (required by realsense-ros)
