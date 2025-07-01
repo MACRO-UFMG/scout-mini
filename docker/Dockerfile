@@ -72,6 +72,11 @@ RUN apt-get update && apt-get install -y \
     ros-jazzy-tf2-eigen \
     ros-jazzy-diagnostic-updater \
     ros-jazzy-angles \
+    # Pre-built RealSense ROS packages
+    ros-jazzy-librealsense2 \
+    ros-jazzy-realsense2-camera \
+    ros-jazzy-realsense2-camera-msgs \
+    ros-jazzy-realsense2-description \
     # Additional RealSense dependencies
     libssl-dev \
     # Mocap OptiTrack dependencies
@@ -103,12 +108,10 @@ RUN mkdir -p /home/$USERNAME/ros2_ws/src && \
     echo "source /home/$USERNAME/ros2_ws/install/setup.bash" >> /home/$USERNAME/.bashrc && \
     chown -R $USERNAME:$USERNAME /home/$USERNAME
 
-# Copy Scout Mini, RealSense, and mocap packages source code
+# Copy Scout Mini and mocap packages source code (RealSense using pre-built packages)
 COPY scout_ws/src/scout-bringup /home/$USERNAME/ros2_ws/src/scout-bringup
 COPY scout_ws/src/scout_ros2 /home/$USERNAME/ros2_ws/src/scout_ros2
 COPY scout_ws/src/ugv_sdk /home/$USERNAME/ros2_ws/src/ugv_sdk
-COPY scout_ws/src/librealsense /home/$USERNAME/ros2_ws/src/librealsense
-COPY scout_ws/src/realsense-ros /home/$USERNAME/ros2_ws/src/realsense-ros
 COPY scout_ws/src/mocap_optitrack /home/$USERNAME/ros2_ws/src/mocap_optitrack
 
 # Copy and set up entrypoint script (as root)
@@ -141,22 +144,7 @@ RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
     source install/setup.bash && \
     colcon build --packages-select scout_msgs scout_base scout_description --cmake-args -DCMAKE_BUILD_TYPE=Release"
 
-# Build librealsense SDK first (required for RealSense ROS packages)
-RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
-    source install/setup.bash && \
-    cd src/librealsense && \
-    mkdir -p build && cd build && \
-    cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_EXAMPLES=false -DBUILD_GRAPHICAL_EXAMPLES=false -DFORCE_RSUSB_BACKEND=false && \
-    make -j$(nproc) && \
-    sudo make install && \
-    sudo ldconfig"
-
-# Build RealSense ROS packages
-RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
-    source install/setup.bash && \
-    colcon build --packages-select realsense2_camera_msgs realsense2_description realsense2_camera --cmake-args -DCMAKE_BUILD_TYPE=Release"
-
-# Build Scout bringup, pointcloud_to_laserscan, and mocap_optitrack
+# Build Scout bringup, pointcloud_to_laserscan, and mocap_optitrack (RealSense using pre-built packages)
 RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
     source install/setup.bash && \
     colcon build --packages-select scout_bringup pointcloud_to_laserscan mocap_optitrack --cmake-args -DCMAKE_BUILD_TYPE=Release"
