@@ -26,3 +26,6 @@
 	path = scout_ws/src/realsense-ros
 	url = https://github.com/IntelRealSense/realsense-ros.git
 	branch = ros2-development
+[submodule "scout_ws/src/mocap_optitrack"]
+	path = scout_ws/src/mocap_optitrack
+	url = https://github.com/Gerjen100/mocap_optitrack.git
