@@ -44,7 +44,6 @@ RUN apt-get update && apt-get install -y \
     libasio-dev \
     libserial-dev \
     # Scout Mini ROS packages
-    ros-jazzy-serial \
     ros-jazzy-joint-state-publisher \
     ros-jazzy-robot-state-publisher \
     ros-jazzy-xacro \
