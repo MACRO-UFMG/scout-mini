@@ -47,6 +47,7 @@ echo "📡 Using ROS_DOMAIN_ID: $ROS_DOMAIN_ID"
 
 # Launch the scout-mini service with additional volumes and hardware access
 echo "🐳 Starting scout-mini container with Jetson Orin hardware access..."
+echo "📦 Scout Mini packages are pre-built in the image"
 docker run -it --rm \
     --name scout-mini-runtime \
     --runtime nvidia \
@@ -58,7 +59,7 @@ docker run -it --rm \
     -e FASTRTPS_DEFAULT_PROFILES_FILE=/dev/null \
     -e ROS_DOMAIN_ID=$ROS_DOMAIN_ID \
     -e ROS_LOCALHOST_ONLY=0 \
-    -v /home/coro/scout_ws/src/scout-mini:/home/ros/ros2_ws/src:rw \
+    -v $(pwd)/../:/workspace:rw \
     -v /dev:/dev:rw \
     -v /dev/shm:/dev/shm \
     scout-mini-ros2:latest \
