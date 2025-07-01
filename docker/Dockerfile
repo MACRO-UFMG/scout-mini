@@ -106,6 +106,8 @@ RUN groupadd -g $USER_GID $USERNAME && \
 RUN mkdir -p /home/$USERNAME/ros2_ws/src && \
     echo "source /opt/ros/jazzy/setup.bash" >> /home/$USERNAME/.bashrc && \
     echo "source /home/$USERNAME/ros2_ws/install/setup.bash" >> /home/$USERNAME/.bashrc && \
+    echo "export ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST" >> /home/$USERNAME/.bashrc && \
+    echo "export FASTRTPS_DEFAULT_PROFILES_FILE=/dev/null" >> /home/$USERNAME/.bashrc && \
     chown -R $USERNAME:$USERNAME /home/$USERNAME
 
 # Copy Scout Mini and mocap packages source code (RealSense using pre-built packages)
