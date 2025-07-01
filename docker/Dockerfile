@@ -122,9 +122,22 @@ RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
     rosdep update && \
     rosdep install --from-paths src --ignore-src -r -y --skip-keys='ros-jazzy-launch-pytest' || true"
 
-# Build all Scout packages together to resolve dependencies
+# List available packages for debugging
 RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
-    colcon build --packages-select ugv_sdk scout_msgs scout_base scout_description --cmake-args -DCMAKE_BUILD_TYPE=Release"
+    colcon list --names-only"
+
+# Try building ugv_sdk as a standalone CMake package first
+RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
+    cd src/ugv_sdk && \
+    mkdir -p build && cd build && \
+    cmake .. -DCMAKE_BUILD_TYPE=Release && \
+    make -j$(nproc) && \
+    sudo make install && \
+    sudo ldconfig"
+
+# Build Scout packages (now that ugv_sdk is installed system-wide)
+RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
+    colcon build --packages-select scout_msgs scout_base scout_description --cmake-args -DCMAKE_BUILD_TYPE=Release"
 
 # Build Scout bringup and additional utilities
 RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
