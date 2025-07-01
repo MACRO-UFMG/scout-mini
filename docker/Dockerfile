@@ -122,18 +122,24 @@ RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
     rosdep update && \
     rosdep install --from-paths src --ignore-src -r -y --skip-keys='ugv_sdk ros-jazzy-launch-pytest' || true"
 
-# Build librealsense SDK first (required by realsense-ros)
+# Build Scout Mini packages first (messages, then main packages)
 RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
-    cd src/librealsense && \
-    mkdir build && cd build && \
-    cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_EXAMPLES=true -DBUILD_GRAPHICAL_EXAMPLES=false && \
-    make -j$(nproc) && \
-    sudo make install && \
-    sudo ldconfig"
+    colcon build --packages-select scout_msgs --cmake-args -DCMAKE_BUILD_TYPE=Release"
 
-# Build Scout Mini and RealSense ROS packages
+# Build Scout Mini main packages
 RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
-    colcon build --packages-select scout_base scout_description scout_msgs ugv_sdk scout_bringup realsense2_camera realsense2_description --cmake-args -DCMAKE_BUILD_TYPE=Release"
+    source install/setup.bash && \
+    colcon build --packages-select scout_base scout_description ugv_sdk --cmake-args -DCMAKE_BUILD_TYPE=Release"
+
+# Build Scout bringup and additional utilities
+RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
+    source install/setup.bash && \
+    colcon build --packages-select scout_bringup pointcloud_to_laserscan --cmake-args -DCMAKE_BUILD_TYPE=Release"
+
+# Build RealSense packages (optional - can be built later)
+RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
+    source install/setup.bash && \
+    colcon build --packages-select realsense2_camera_msgs realsense2_description --cmake-args -DCMAKE_BUILD_TYPE=Release || echo 'RealSense packages build failed - will be available for manual build'"
 
 # Set entrypoint
 ENTRYPOINT ["/entrypoint.sh"]
