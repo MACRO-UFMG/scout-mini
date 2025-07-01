@@ -1,5 +1,5 @@
 # Scout Mini ROS 2 Jazzy Docker Image for Jetson Orin
-# Includes scout_bringup, scout_ros2, and ugv_sdk packages pre-built
+# Includes scout_bringup, scout_ros2, ugv_sdk, and Intel RealSense packages pre-built
 # Use Ubuntu 24.04 as base image (Noble) which is the recommended platform for ROS 2 Jazzy
 FROM ubuntu:24.04
 
@@ -31,7 +31,7 @@ RUN apt-get update && apt-get install -y \
     gz-harmonic \
     && rm -rf /var/lib/apt/lists/*
 
-# Install development tools and dependencies for Scout Mini
+# Install development tools and dependencies for Scout Mini + RealSense
 RUN apt-get update && apt-get install -y \
     build-essential \
     cmake \
@@ -43,6 +43,7 @@ RUN apt-get update && apt-get install -y \
     python3-venv \
     libasio-dev \
     libserial-dev \
+    # Scout Mini ROS packages
     ros-jazzy-serial \
     ros-jazzy-joint-state-publisher \
     ros-jazzy-robot-state-publisher \
@@ -53,6 +54,20 @@ RUN apt-get update && apt-get install -y \
     ros-jazzy-sensor-msgs \
     ros-jazzy-nav-msgs \
     ros-jazzy-std-msgs \
+    # Intel RealSense dependencies
+    libudev-dev \
+    pkg-config \
+    libgtk-3-dev \
+    libusb-1.0-0-dev \
+    libglfw3-dev \
+    libgl1-mesa-dev \
+    libglu1-mesa-dev \
+    ros-jazzy-cv-bridge \
+    ros-jazzy-image-transport \
+    ros-jazzy-tf2 \
+    ros-jazzy-tf2-eigen \
+    ros-jazzy-diagnostic-updater \
+    ros-jazzy-angles \
     && rm -rf /var/lib/apt/lists/*
 
 # Initialize rosdep
@@ -79,10 +94,12 @@ RUN mkdir -p /home/$USERNAME/ros2_ws/src && \
     echo "source /home/$USERNAME/ros2_ws/install/setup.bash" >> /home/$USERNAME/.bashrc && \
     chown -R $USERNAME:$USERNAME /home/$USERNAME
 
-# Copy Scout Mini packages source code
+# Copy Scout Mini and RealSense packages source code
 COPY scout_ws/src/scout-bringup /home/$USERNAME/ros2_ws/src/scout-bringup
 COPY scout_ws/src/scout_ros2 /home/$USERNAME/ros2_ws/src/scout_ros2
 COPY scout_ws/src/ugv_sdk /home/$USERNAME/ros2_ws/src/ugv_sdk
+COPY scout_ws/src/librealsense /home/$USERNAME/ros2_ws/src/librealsense
+COPY scout_ws/src/realsense-ros /home/$USERNAME/ros2_ws/src/realsense-ros
 
 # Copy and set up entrypoint script (as root)
 COPY docker/entrypoint.sh /entrypoint.sh
@@ -95,13 +112,22 @@ RUN chown -R $USERNAME:$USERNAME /home/$USERNAME/ros2_ws
 USER $USERNAME
 WORKDIR /home/$USERNAME/ros2_ws
 
-# Install dependencies for Scout Mini packages
+# Install dependencies for Scout Mini and RealSense packages
 RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
     rosdep install --from-paths src --ignore-src -r -y"
 
-# Build Scout Mini packages
+# Build librealsense SDK first (required by realsense-ros)
 RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
-    colcon build --packages-select scout_base scout_description scout_msgs ugv_sdk scout_bringup --cmake-args -DCMAKE_BUILD_TYPE=Release"
+    cd src/librealsense && \
+    mkdir build && cd build && \
+    cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_EXAMPLES=true -DBUILD_GRAPHICAL_EXAMPLES=false && \
+    make -j$(nproc) && \
+    sudo make install && \
+    sudo ldconfig"
+
+# Build Scout Mini and RealSense ROS packages
+RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
+    colcon build --packages-select scout_base scout_description scout_msgs ugv_sdk scout_bringup realsense2_camera realsense2_description --cmake-args -DCMAKE_BUILD_TYPE=Release"
 
 # Set entrypoint
 ENTRYPOINT ["/entrypoint.sh"]

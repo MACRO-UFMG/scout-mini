@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Launch script for Scout Mini ROS 2 Jazzy service on Jetson Orin
-# This script sets up the environment and launches the scout-mini service
+# Launch script for Scout Mini + Intel RealSense ROS 2 Jazzy service on Jetson Orin
+# This script sets up the environment and launches the scout-mini service with RealSense support
 
 set -e  # Exit on any error
 
@@ -32,7 +32,7 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-echo "🚀 Launching Scout Mini ROS 2 Jazzy service on Jetson Orin..."
+echo "🚀 Launching Scout Mini + Intel RealSense ROS 2 Jazzy service on Jetson Orin..."
 
 # Check if docker-compose.yml exists
 if [ ! -f "docker-compose.yml" ]; then
@@ -47,7 +47,7 @@ echo "📡 Using ROS_DOMAIN_ID: $ROS_DOMAIN_ID"
 
 # Launch the scout-mini service with additional volumes and hardware access
 echo "🐳 Starting scout-mini container with Jetson Orin hardware access..."
-echo "📦 Scout Mini packages are pre-built in the image"
+echo "📦 Scout Mini + Intel RealSense packages are pre-built in the image"
 docker run -it --rm \
     --name scout-mini-runtime \
     --runtime nvidia \
