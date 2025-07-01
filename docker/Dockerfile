@@ -74,7 +74,6 @@ RUN apt-get update && apt-get install -y \
     ros-jazzy-angles \
     # Additional RealSense dependencies
     libssl-dev \
-    libtm-dev \
     # Mocap OptiTrack dependencies
     libboost-all-dev \
     libxml2-dev \
