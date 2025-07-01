@@ -126,17 +126,13 @@ RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
 RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
     colcon list --names-only"
 
-# Try building ugv_sdk as a standalone CMake package first
+# Build ugv_sdk as a ROS 2 package first
 RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
-    cd src/ugv_sdk && \
-    mkdir -p build && cd build && \
-    cmake .. -DCMAKE_BUILD_TYPE=Release && \
-    make -j$(nproc) && \
-    sudo make install && \
-    sudo ldconfig"
+    colcon build --packages-select ugv_sdk --cmake-args -DCMAKE_BUILD_TYPE=Release"
 
-# Build Scout packages (now that ugv_sdk is installed system-wide)
+# Build Scout packages (now that ugv_sdk is available in ROS 2 workspace)
 RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
+    source install/setup.bash && \
     colcon build --packages-select scout_msgs scout_base scout_description --cmake-args -DCMAKE_BUILD_TYPE=Release"
 
 # Build Scout bringup and additional utilities
