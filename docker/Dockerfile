@@ -122,14 +122,9 @@ RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
     rosdep update && \
     rosdep install --from-paths src --ignore-src -r -y --skip-keys='ros-jazzy-launch-pytest' || true"
 
-# Build ugv_sdk and Scout Mini packages first (dependencies first)
+# Build all Scout packages together to resolve dependencies
 RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
-    colcon build --packages-select ugv_sdk scout_msgs --cmake-args -DCMAKE_BUILD_TYPE=Release"
-
-# Build Scout Mini main packages
-RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
-    source install/setup.bash && \
-    colcon build --packages-select scout_base scout_description --cmake-args -DCMAKE_BUILD_TYPE=Release"
+    colcon build --packages-select ugv_sdk scout_msgs scout_base scout_description --cmake-args -DCMAKE_BUILD_TYPE=Release"
 
 # Build Scout bringup and additional utilities
 RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
