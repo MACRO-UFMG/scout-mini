@@ -87,9 +87,8 @@ RUN apt-get update && apt-get install -y \
     can-utils \
     && rm -rf /var/lib/apt/lists/*
 
-# Upgrade pip and install additional Python packages
-RUN pip3 install --upgrade pip --break-system-packages && \
-    pip3 install transforms3d --break-system-packages
+# Install additional Python packages
+RUN pip3 install transforms3d --break-system-packages
 
 # Initialize rosdep
 RUN rosdep init && rosdep update
