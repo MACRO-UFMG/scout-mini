@@ -6,7 +6,7 @@
 set -e  # Exit on any error
 
 # Default values
-ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-7}
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -56,10 +56,9 @@ docker run -it --rm \
     --privileged \
     -e NVIDIA_VISIBLE_DEVICES=all \
     -e NVIDIA_DRIVER_CAPABILITIES=all \
-    -e FASTRTPS_DEFAULT_PROFILES_FILE=/dev/null \
     -e ROS_DOMAIN_ID=$ROS_DOMAIN_ID \
     -e ROS_LOCALHOST_ONLY=0 \
-    -v $(pwd)/../:/workspace:rw \
+    -v $(pwd)/../scout_ws/src:/home/ros/ros2_ws/src:rw \
     -v /dev:/dev:rw \
     -v /dev/shm:/dev/shm \
     scout-mini-ros2:latest \
