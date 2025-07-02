@@ -188,10 +188,21 @@ RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
     source install/setup.bash && \
     colcon build --packages-select livox_ros_driver2 --cmake-args -DROS_EDITION=ROS2 -DROS_DISTRO=jazzy -DCMAKE_BUILD_TYPE=Release"
 
-# Build remaining packages
+# Build scout_bringup and mocap_optitrack first
 RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
     source install/setup.bash && \
-    colcon build --packages-select scout_bringup pointcloud_to_laserscan mocap_optitrack FAST_LIO_ROS2 --cmake-args -DCMAKE_BUILD_TYPE=Release"
+    colcon build --packages-select scout_bringup mocap_optitrack --cmake-args -DCMAKE_BUILD_TYPE=Release"
+
+# Build FAST_LIO_ROS2 separately
+RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
+    source install/setup.bash && \
+    colcon build --packages-select FAST_LIO_ROS2 --cmake-args -DCMAKE_BUILD_TYPE=Release"
+
+# Skip pointcloud_to_laserscan for now due to ROS2 Jazzy compatibility issues
+# The package has message_filters QoS API changes that need fixing
+# RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
+#     source install/setup.bash && \
+#     colcon build --packages-select pointcloud_to_laserscan --cmake-args -DCMAKE_BUILD_TYPE=Release"
 
 # Set entrypoint
 ENTRYPOINT ["/entrypoint.sh"]
