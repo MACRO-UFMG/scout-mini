@@ -108,15 +108,25 @@ RUN mkdir -p /home/$USERNAME/ros2_ws/src && \
     echo "source /home/$USERNAME/ros2_ws/install/setup.bash" >> /home/$USERNAME/.bashrc && \
     chown -R $USERNAME:$USERNAME /home/$USERNAME
 
-# Copy Scout Mini and mocap packages source code (RealSense using pre-built packages)
+# Copy Scout Mini, mocap, and Livox packages source code (RealSense using pre-built packages)
 COPY scout_ws/src/scout-bringup /home/$USERNAME/ros2_ws/src/scout-bringup
 COPY scout_ws/src/scout_ros2 /home/$USERNAME/ros2_ws/src/scout_ros2
 COPY scout_ws/src/ugv_sdk /home/$USERNAME/ros2_ws/src/ugv_sdk
 COPY scout_ws/src/mocap_optitrack /home/$USERNAME/ros2_ws/src/mocap_optitrack
+COPY scout_ws/src/Livox-SDK2 /home/$USERNAME/ros2_ws/src/Livox-SDK2
+COPY scout_ws/src/livox_ros_driver2 /home/$USERNAME/ros2_ws/src/livox_ros_driver2
 
 # Copy and set up entrypoint script (as root)
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
+
+# Build and install Livox-SDK2 (requires root privileges for installation)
+RUN cd /home/$USERNAME/ros2_ws/src/Livox-SDK2 && \
+    mkdir build && \
+    cd build && \
+    cmake .. && \
+    make -j$(nproc) && \
+    make install
 
 # Set ownership of copied files
 RUN chown -R $USERNAME:$USERNAME /home/$USERNAME/ros2_ws
@@ -148,6 +158,15 @@ RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
 RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
     source install/setup.bash && \
     colcon build --packages-select scout_bringup pointcloud_to_laserscan mocap_optitrack --cmake-args -DCMAKE_BUILD_TYPE=Release"
+
+# Setup and build livox_ros_driver2 for ROS2 Jazzy
+RUN /bin/bash -c "cd src/livox_ros_driver2 && \
+    ln -s package_ROS2.xml package.xml && \
+    cp -rf launch_ROS2/ launch/"
+
+RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
+    source install/setup.bash && \
+    colcon build --packages-select livox_ros_driver2 livox_sdk2 --cmake-args -DROS_EDITION=ROS2 -DROS_DISTRO=jazzy -DCMAKE_BUILD_TYPE=Release"
 
 # Set entrypoint
 ENTRYPOINT ["/entrypoint.sh"]
