@@ -85,6 +85,21 @@ RUN apt-get update && apt-get install -y \
     # CAN interface tools
     iproute2 \
     can-utils \
+    # ROS2 message generation dependencies
+    ros-jazzy-rosidl-default-generators \
+    ros-jazzy-rosidl-default-runtime \
+    ros-jazzy-rosidl-runtime-cpp \
+    ros-jazzy-rmw-fastrtps-cpp \
+    ros-jazzy-fastrtps \
+    # PCL dependencies for livox_ros_driver2
+    ros-jazzy-pcl-conversions \
+    libpcl-dev \
+    # Additional dependencies
+    ros-jazzy-ament-cmake-auto \
+    # FAST_LIO_ROS2 dependencies
+    libeigen3-dev \
+    ros-jazzy-visualization-msgs \
+    ros-jazzy-message-filters \
     && rm -rf /var/lib/apt/lists/*
 
 # Install additional Python packages
@@ -115,13 +130,15 @@ RUN mkdir -p /home/$USERNAME/ros2_ws/src && \
     echo "alias encan='echo \"coro\" | sudo -S ip link set can0 up type can bitrate 500000'" >> /home/$USERNAME/.bashrc && \
     chown -R $USERNAME:$USERNAME /home/$USERNAME
 
-# Copy Scout Mini, mocap, and Livox packages source code (RealSense using pre-built packages)
+# Copy Scout Mini, mocap, Livox, and SLAM packages source code (RealSense using pre-built packages)
 COPY scout_ws/src/scout-bringup /home/$USERNAME/ros2_ws/src/scout-bringup
 COPY scout_ws/src/scout_ros2 /home/$USERNAME/ros2_ws/src/scout_ros2
 COPY scout_ws/src/ugv_sdk /home/$USERNAME/ros2_ws/src/ugv_sdk
 COPY scout_ws/src/mocap_optitrack /home/$USERNAME/ros2_ws/src/mocap_optitrack
 COPY scout_ws/src/Livox-SDK2 /home/$USERNAME/ros2_ws/src/Livox-SDK2
 COPY scout_ws/src/livox_ros_driver2 /home/$USERNAME/ros2_ws/src/livox_ros_driver2
+COPY scout_ws/src/pointcloud_to_laserscan /home/$USERNAME/ros2_ws/src/pointcloud_to_laserscan
+COPY scout_ws/src/FAST_LIO_ROS2 /home/$USERNAME/ros2_ws/src/FAST_LIO_ROS2
 
 # Copy and set up entrypoint script (as root)
 COPY docker/entrypoint.sh /entrypoint.sh
@@ -161,19 +178,20 @@ RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
     source install/setup.bash && \
     colcon build --packages-select scout_msgs scout_base scout_description --cmake-args -DCMAKE_BUILD_TYPE=Release"
 
-# Build Scout bringup, pointcloud_to_laserscan, and mocap_optitrack (RealSense using pre-built packages)
-RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
-    source install/setup.bash && \
-    colcon build --packages-select scout_bringup pointcloud_to_laserscan mocap_optitrack --cmake-args -DCMAKE_BUILD_TYPE=Release"
-
-# Setup and build livox_ros_driver2 for ROS2 Jazzy
+# Setup livox_ros_driver2 for ROS2 Jazzy first
 RUN /bin/bash -c "cd src/livox_ros_driver2 && \
     ln -s package_ROS2.xml package.xml && \
     cp -rf launch_ROS2/ launch/"
 
+# Build livox_ros_driver2 first (with custom messages)
 RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
     source install/setup.bash && \
-    colcon build --packages-select livox_ros_driver2 livox_sdk2 --cmake-args -DROS_EDITION=ROS2 -DROS_DISTRO=jazzy -DCMAKE_BUILD_TYPE=Release"
+    colcon build --packages-select livox_ros_driver2 --cmake-args -DROS_EDITION=ROS2 -DROS_DISTRO=jazzy -DCMAKE_BUILD_TYPE=Release"
+
+# Build remaining packages
+RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
+    source install/setup.bash && \
+    colcon build --packages-select scout_bringup pointcloud_to_laserscan mocap_optitrack FAST_LIO_ROS2 --cmake-args -DCMAKE_BUILD_TYPE=Release"
 
 # Set entrypoint
 ENTRYPOINT ["/entrypoint.sh"]
