@@ -129,7 +129,7 @@ RUN chmod +x /entrypoint.sh
 
 # Build and install Livox-SDK2 (requires root privileges for installation)
 RUN cd /home/$USERNAME/ros2_ws/src/Livox-SDK2 && \
-    mkdir build && \
+    rm -rf build && mkdir build && \
     cd build && \
     cmake .. && \
     make -j$(nproc) && \
