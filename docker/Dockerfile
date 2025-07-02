@@ -82,7 +82,14 @@ RUN apt-get update && apt-get install -y \
     # Mocap OptiTrack dependencies
     libboost-all-dev \
     libxml2-dev \
+    # CAN interface tools
+    iproute2 \
+    can-utils \
     && rm -rf /var/lib/apt/lists/*
+
+# Upgrade pip and install additional Python packages
+RUN pip3 install --upgrade pip && \
+    pip3 install transforms3d
 
 # Initialize rosdep
 RUN rosdep init && rosdep update
@@ -91,10 +98,10 @@ RUN rosdep init && rosdep update
 ENV ROS_DISTRO=jazzy
 ENV GZ_VERSION=harmonic
 
-# Create a non-root user
+# Create a non-root user (matching Jetson user coro)
 ARG USERNAME=ros
-ARG USER_UID=2000
-ARG USER_GID=2000
+ARG USER_UID=1000
+ARG USER_GID=1000
 
 # Create the user and group
 RUN groupadd -g $USER_GID $USERNAME && \
@@ -106,6 +113,7 @@ RUN groupadd -g $USER_GID $USERNAME && \
 RUN mkdir -p /home/$USERNAME/ros2_ws/src && \
     echo "source /opt/ros/jazzy/setup.bash" >> /home/$USERNAME/.bashrc && \
     echo "source /home/$USERNAME/ros2_ws/install/setup.bash" >> /home/$USERNAME/.bashrc && \
+    echo "alias encan='echo \"coro\" | sudo -S ip link set can0 up type can bitrate 500000'" >> /home/$USERNAME/.bashrc && \
     chown -R $USERNAME:$USERNAME /home/$USERNAME
 
 # Copy Scout Mini, mocap, and Livox packages source code (RealSense using pre-built packages)
