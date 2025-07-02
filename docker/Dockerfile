@@ -102,9 +102,9 @@ ARG USERNAME=ros
 ARG USER_UID=1000
 ARG USER_GID=1000
 
-# Create the user and group
-RUN groupadd -g $USER_GID $USERNAME && \
-    useradd -m -u $USER_UID -g $USER_GID -s /bin/bash $USERNAME && \
+# Create the user and group (handle existing GID/UID)
+RUN (groupadd -g $USER_GID $USERNAME || groupmod -n $USERNAME $(getent group $USER_GID | cut -d: -f1)) && \
+    (useradd -m -u $USER_UID -g $USER_GID -s /bin/bash $USERNAME || usermod -l $USERNAME -d /home/$USERNAME -m $(getent passwd $USER_UID | cut -d: -f1)) && \
     echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME && \
     chmod 0440 /etc/sudoers.d/$USERNAME
 
