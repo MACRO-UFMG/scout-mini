@@ -82,6 +82,8 @@ RUN apt-get update && apt-get install -y \
     # Mocap OptiTrack dependencies
     libboost-all-dev \
     libxml2-dev \
+    # MPI for PCL/VTK support
+    libopenmpi-dev \
     # CAN interface tools
     iproute2 \
     can-utils \
@@ -206,7 +208,7 @@ RUN /bin/bash -c "cd /home/$USERNAME/ros2_ws && \
 RUN /bin/bash -c "cd /home/$USERNAME/ros2_ws && \
     source /opt/ros/jazzy/setup.bash && \
     source install/setup.bash && \
-    colcon build --packages-select FAST_LIO_ROS2 --cmake-args -DCMAKE_BUILD_TYPE=Release"
+    colcon build --packages-select FAST_LIO_ROS2 --cmake-args -DCMAKE_BUILD_TYPE=Release -Wno-dev"
 
 # Skip pointcloud_to_laserscan for now due to ROS2 Jazzy compatibility issues
 # The package has message_filters QoS API changes that need fixing
