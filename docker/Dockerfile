@@ -100,6 +100,8 @@ RUN apt-get update && apt-get install -y \
     libeigen3-dev \
     ros-jazzy-visualization-msgs \
     ros-jazzy-message-filters \
+    # APR library for livox_ros_driver2
+    libapr1-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Install additional Python packages
@@ -161,40 +163,48 @@ WORKDIR /home/$USERNAME/ros2_ws
 
 # Update rosdep for the ros user and install dependencies for Scout Mini and RealSense packages
 # Skip ros-jazzy-launch-pytest as it is unavailable
-RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
+RUN /bin/bash -c "cd /home/$USERNAME/ros2_ws && \
+    source /opt/ros/jazzy/setup.bash && \
     rosdep update && \
     rosdep install --from-paths src --ignore-src -r -y --skip-keys='ros-jazzy-launch-pytest' || true"
 
 # List available packages for debugging
-RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
+RUN /bin/bash -c "cd /home/$USERNAME/ros2_ws && \
+    source /opt/ros/jazzy/setup.bash && \
     colcon list --names-only"
 
 # Build ugv_sdk as a ROS 2 package first
-RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
+RUN /bin/bash -c "cd /home/$USERNAME/ros2_ws && \
+    source /opt/ros/jazzy/setup.bash && \
     colcon build --packages-select ugv_sdk --cmake-args -DCMAKE_BUILD_TYPE=Release"
 
 # Build Scout packages (now that ugv_sdk is available in ROS 2 workspace)
-RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
+RUN /bin/bash -c "cd /home/$USERNAME/ros2_ws && \
+    source /opt/ros/jazzy/setup.bash && \
     source install/setup.bash && \
     colcon build --packages-select scout_msgs scout_base scout_description --cmake-args -DCMAKE_BUILD_TYPE=Release"
 
 # Setup livox_ros_driver2 for ROS2 Jazzy first
-RUN /bin/bash -c "cd src/livox_ros_driver2 && \
+RUN /bin/bash -c "cd /home/$USERNAME/ros2_ws/src/livox_ros_driver2 && \
+    rm -f package.xml && \
     ln -s package_ROS2.xml package.xml && \
     cp -rf launch_ROS2/ launch/"
 
 # Build livox_ros_driver2 first (with custom messages)
-RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
+RUN /bin/bash -c "cd /home/$USERNAME/ros2_ws && \
+    source /opt/ros/jazzy/setup.bash && \
     source install/setup.bash && \
     colcon build --packages-select livox_ros_driver2 --cmake-args -DROS_EDITION=ROS2 -DROS_DISTRO=jazzy -DCMAKE_BUILD_TYPE=Release"
 
 # Build scout_bringup and mocap_optitrack first
-RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
+RUN /bin/bash -c "cd /home/$USERNAME/ros2_ws && \
+    source /opt/ros/jazzy/setup.bash && \
     source install/setup.bash && \
     colcon build --packages-select scout_bringup mocap_optitrack --cmake-args -DCMAKE_BUILD_TYPE=Release"
 
 # Build FAST_LIO_ROS2 separately
-RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
+RUN /bin/bash -c "cd /home/$USERNAME/ros2_ws && \
+    source /opt/ros/jazzy/setup.bash && \
     source install/setup.bash && \
     colcon build --packages-select FAST_LIO_ROS2 --cmake-args -DCMAKE_BUILD_TYPE=Release"
 

@@ -18,6 +18,21 @@ fi
 export ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
 export ROS_LOCALHOST_ONLY=${ROS_LOCALHOST_ONLY:-0}
 
+# Check and setup CAN interface if needed
+echo "🔌 Checking CAN interface..."
+if ! ip link show can0 &>/dev/null; then
+    echo "📡 CAN interface not found, creating can0..."
+    sudo ip link add dev can0 type can
+fi
+
+if ! ip link show can0 | grep -q "UP"; then
+    echo "⚡ Setting up can0 interface..."
+    sudo ip link set can0 up type can bitrate 500000
+    echo "✅ CAN interface can0 configured and enabled"
+else
+    echo "✅ CAN interface can0 is already up"
+fi
+
 # Print environment info
 echo "🤖 Scout Mini ROS 2 Jazzy Environment Ready!"
 echo "📡 ROS_DOMAIN_ID: $ROS_DOMAIN_ID"
