@@ -192,7 +192,13 @@ RUN /bin/bash -c "cd /home/$USERNAME/ros2_ws/src/livox_ros_driver2 && \
     ln -s package_ROS2.xml package.xml && \
     cp -rf launch_ROS2/ launch/"
 
-# Build livox_ros_driver2 first (with custom messages)
+# Build livox_ros_driver2_msgs first (custom messages only)
+RUN /bin/bash -c "cd /home/$USERNAME/ros2_ws && \
+    source /opt/ros/jazzy/setup.bash && \
+    source install/setup.bash && \
+    colcon build --packages-select livox_ros_driver2_msgs --cmake-args -DCMAKE_BUILD_TYPE=Release"
+
+# Build livox_ros_driver2 (depends on livox_ros_driver2_msgs)
 RUN /bin/bash -c "cd /home/$USERNAME/ros2_ws && \
     source /opt/ros/jazzy/setup.bash && \
     source install/setup.bash && \
