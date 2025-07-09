@@ -216,6 +216,12 @@ RUN /bin/bash -c "cd /home/$USERNAME/ros2_ws && \
     source install/setup.bash && \
     colcon build --packages-select FAST_LIO_ROS2 --cmake-args -DCMAKE_BUILD_TYPE=Release -Wno-dev"
 
+# Build fast_lio package
+RUN /bin/bash -c "cd /home/$USERNAME/ros2_ws && \
+    source /opt/ros/jazzy/setup.bash && \
+    source install/setup.bash && \
+    colcon build --packages-select fast_lio --cmake-args -DCMAKE_BUILD_TYPE=Release"
+
 # Skip pointcloud_to_laserscan for now due to ROS2 Jazzy compatibility issues
 # The package has message_filters QoS API changes that need fixing
 RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
