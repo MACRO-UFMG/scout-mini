@@ -218,9 +218,9 @@ RUN /bin/bash -c "cd /home/$USERNAME/ros2_ws && \
 
 # Skip pointcloud_to_laserscan for now due to ROS2 Jazzy compatibility issues
 # The package has message_filters QoS API changes that need fixing
-# RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
-#     source install/setup.bash && \
-#     colcon build --packages-select pointcloud_to_laserscan --cmake-args -DCMAKE_BUILD_TYPE=Release"
+RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
+    source install/setup.bash && \
+    colcon build --packages-select pointcloud_to_laserscan --cmake-args -DCMAKE_BUILD_TYPE=Release"
 
 # Set entrypoint
 ENTRYPOINT ["/entrypoint.sh"]
